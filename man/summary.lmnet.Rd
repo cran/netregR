@@ -2,11 +2,15 @@
 % Please edit documentation in R/lmnet.R
 \name{summary.lmnet}
 \alias{summary.lmnet}
-\title{Summary generic for class lmnet}
+\title{Summary S3 generic for class lmnet}
 \usage{
-\method{summary}{lmnet}(x)
+\method{summary}{lmnet}(object, ...)
+}
+\arguments{
+\item{object}{lmnet object}
+
+\item{...}{ignored}
 }
 \description{
-Summary generic for class lmnet
+Summary S3 generic for class lmnet
 }
-\keyword{internal}

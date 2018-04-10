@@ -2,11 +2,15 @@
 % Please edit documentation in R/lmnet.R
 \name{vcov.lmnet}
 \alias{vcov.lmnet}
-\title{vcov generic for class lmnet}
+\title{vcov S3 generic for class lmnet}
 \usage{
-\method{vcov}{lmnet}(x)
+\method{vcov}{lmnet}(object, ...)
+}
+\arguments{
+\item{object}{lmnet object}
+
+\item{...}{ignored}
 }
 \description{
-vcov generic for class lmnet
+vcov S3 generic for class lmnet
 }
-\keyword{internal}

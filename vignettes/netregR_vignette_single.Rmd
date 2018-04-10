@@ -1,0 +1,188 @@
+---
+title: "Regression with Network Response"
+author: "Frank W. Marrs, Bailey K. Fosdick, and Tyler H. McCormick"
+date: "`r Sys.Date()`"
+bibliography: bibliography.bib
+output:  
+  prettydoc::html_pretty:
+    theme: architect
+vignette: >
+  %\VignetteIndexEntry{Regression with Network Response}
+  %\VignetteEngine{knitr::knitr}
+  %\VignetteEncoding{UTF-8}
+---
+
+
+
+```{r, echo=FALSE, eval=TRUE, message=FALSE, warning=FALSE}
+library("knitcitations")
+library("netregR")
+cleanbib()
+options("citation_format" = "pandoc")
+```
+
+
+# Abstract
+The `netregR` package provides methods for performing regression of a network response, where each data point represents an edge on a network, on covariates of interest [@netregR]. In this vignette we focus on linear regression of a single representation of a network (i.e. no replication in time). We provide examples for for directed and undirected networks, each with complete and incomplete ovservations. In addition, we examine some supporting methods for inverting covariance matrices of complete networks that are exchangeable. This vignette and the package `netregR` are based on @marrs2017.
+
+# Introduction
+We focus on the model 
+\begin{align}
+y_{ij} = {\bf{x}}_{ij}^T \boldsymbol{\beta} + \epsilon_{ij}, \label{eq_linmod}
+\end{align}
+where $y_{ij}$ is a (possibly directed) continuous measure from actor $i$ to actor $j$ and ${\bf{x}}_{ij}^T$ is a corresponding vector of covariates. In our setting, the focus is on accurate inference of $\boldsymbol{\beta}$. As $y_{ij}$ is a network, we expect correlation among the errors $\{ \epsilon_{ij} \}_{i,j}^n$. In [@marrs2017], we argue that it is reasonable to assume that the errors are jointly exchangeable. By this, we mean that the labeling of the actors is non-informative to the distirbution of $\{ \epsilon_{ij} \}_{i,j}^n$, such that the distribution $\mathbb{P}(\{ \epsilon_{ij} \}_{i,j}^n) = \mathbb{P}(\{ \epsilon_{\pi{i} \pi{j}} \}_{i,j}^n)$. Indeed, many network models for residual structure are jointly exchangeable, for example the bilinear mixed effects network regression model proposed in [@hoff2005].
+
+### Ordinary Least Squares (OLS)
+We may estimate the linear model using ordinary least squares $\widehat{\boldsymbol{\beta}}_{OLS} = (X^TX)^{-1}X^TY$, where $X$ is a matrix consisting of rows made up of ${\bf{x}}_{ij}^T$ and $Y$ is a vector of the corresponding network responses. However, for accurate inference of $\widehat{\boldsymbol{\beta}}_{OLS}$, we must estimate
+\begin{align}
+\widehat{V}\left[\widehat{\boldsymbol{\beta}}_{OLS} \ \big| \ X \right] = (X^TX)^{-1}X^T \widehat{V}[\boldsymbol{\epsilon}] X(X^TX)^{-1},
+\end{align}
+where $\boldsymbol{\epsilon}$ is the vector of errors corresponding to $Y$ and an estimate of $\boldsymbol{\epsilon}$'s variance is denoted $\widehat{V}[\boldsymbol{\epsilon}]$. In [@marrs2017], we provide an estimator $\widehat{V}_E[\boldsymbol{\epsilon}]$, where we assume that the errors are jointly exchangeable. We show that our estimator outperforms the state of the art when this assumption is reasonable. The package `netregR` implements this estimator to give standard error estimates for $\widehat{\boldsymbol{\beta}}_{OLS}$ that are asymptotically correct and more accurate than current approaches. 
+
+### Generalized Least Squares (GLS)
+It may be desirable to account for $\widehat{V}[\boldsymbol{\epsilon}]$ when estimate $\boldsymbol{\beta}$. It can be shown that, if $W^{-1} := \widehat{V}[\boldsymbol{\epsilon}]$ is known, then the following estimate of the coefficients are the maximum likelihood esitmator under normally-distributed errors [@aitkin1935]:
+\begin{align}
+\widehat{\boldsymbol{\beta}}_{GLS} = (X^TWX)^{-1}X^TWY.
+\end{align}
+In general, $W$ is not known. However, one method for attaining an estimate of $\widehat{\boldsymbol{\beta}}_{GLS}$ is alternating estimation of $\boldsymbol{\beta}$ with $W$ [@carroll1982]. We implement this method, where the estimate of $W$ based on the exchangeable covariance matrix and the estimate of $\boldsymbol{\beta}$ is given in the previous equation. Provided that the exchangeability assumption is correct, a consistent estimate of the variance $\boldsymbol{\beta}$ (from which standard error may be obtained) is
+\begin{align}
+\widehat{V}\left[\widehat{\boldsymbol{\beta}}_{GLS} \ \big| \ X \right] = \left(X^T \widehat{W}_{final} X \right)^{-1},
+\end{align}
+where $\widehat{W}_{final}$ is the estimate of $W$ at convergence. 
+
+In some cases, it may be reasonable to assume that, although the exchangeable assumption is reasonable, the true covariance structure is actually more flexible. In these cases, estimates of the variance-covariance matrix of the errors that are empirical \emph{might} be more appropriate. Here, one might choose to use the "dyadic clustering"" estimator of [@fafchamps2007formation] to estimate the variance of the errors, which we denote $\widehat{V}_{DC}[\boldsymbol{\epsilon}]$. This leads to another consistent estimator of the GLS coefficients:
+\begin{align}
+\widehat{V}\left[\widehat{\boldsymbol{\beta}}_{GLS} \ \big| \ X \right] = \left(X^T \widehat{W}_{final} X \right)^{-1} \left(X^T \widehat{W}_{final}^T \widehat{V}_{DC}[\boldsymbol{\epsilon}] \widehat{W}_{final} X \right) \left(X^T \widehat{W}_{final} X \right)^{-1}.
+\end{align}
+We emphasize that this estimator should be used only when excess heterogeneity is expected in the error structure, otherwise the approach of [@marrs2017] will be more accurate. 
+
+
+### Building and inverting exchangeable covariance matrices
+The iterative procedure procedure for the estimator $\widehat{\boldsymbol{\beta}}_{GLS}$ may require many inversions of $ \widehat{V}[\boldsymbol{\epsilon}]$. We provide a method for efficient inversion of ${V}[\boldsymbol{\epsilon}]$, when the errors are exchangeable, for complete data in [@marrs2017] and implement this inversion as a function in `netregR`. Additionally, we provide a function for generating a random positive definite ${V}[\boldsymbol{\epsilon}]$ when the errors are jointly exchangeable. 
+
+
+# Regression examples
+In this section we perform regression of the interactions among 16 wolves in captivity in Arnheim, Germany [@van1987]. The covariates are the difference in ages of the wolves and an indicator of whether the wolves are of the same sex. We assume the data is complete and treat the network as directed and undirected. Then, we treat zeros in the network as unobserved/missing and repeat for directed and undirected representations of the network. 
+
+
+### Complete data, directed
+We load the wolf data and place into a list. The inputs to the main function of the `netregR` package, `lmnet(.)`, requires a vectorized $Y$ and a matrix $X$ as in typical linear regression equation. However, we provide the function `inputs_lmnet(.)` to process inputs that are in the form of adjacency matrices. The function `inputs_lmnet(.)` takes inputs in the form of a list, one of which must be named "Y" (unless $Y$ is input separately, optional). The function `inputs_lmnet(.)` adds an intercept and returns $Y$ and $X$ in the appropriate form.
+
+```{r, fig.show='hold'}
+data("wolf")
+# list of data with named response Y:
+vlist <- list(wolf$wolf_age_diff, wolf$wolf_same_sex, Y=wolf$wolf)   
+# process inputs that adds intercept by default and treats as directed network by default
+r <- inputs_lmnet(vlist)
+```
+
+
+We first fit the linear regression model using OLS. Note that the standard errors (and $p$-values) are more conservative for the first two coefficients when accounting for network effects, but actually less conservative for the third coefficient, when compared to the approach that ignores the correlation in the errors. Plots of the residuals suggest that the assumption of normality of the errors may not be reasonable. 
+```{r, echo=TRUE, fig.show='hold'}
+# Fit OLS by default, with exchangeable errors
+X <- r$X  ;  colnames(X) <- c("Intercept", "age_diff", "same_sex")
+fit <- lmnet(r$Y, X) 
+summary(fit)     # print summary
+plot(fit)   # examine residual plots
+
+# Typical OLS fit:
+summary(lm(r$Y ~ X - 1))
+```
+
+
+We additionally provide a method for reproducing the estimate of the variance-covariance matrix using the exchangeable estimator. This method may take a fitted model object `fit` or residuals and model matrix `(e,X)`.  
+```{r, echo=TRUE, fig.show='hold'}
+# Showing multiple ways to obtain the same standard error estimates
+range(vnet(e=resid(fit), X=model.matrix(fit))$vhat - vcov(fit))
+range(vnet(fit=fit)$vhat - vcov(fit))
+```
+
+
+
+#### Generalized least squares
+We now fit the linear regression model using GLS. We first check convergence and the number of iterations required. Note that the different coefficient estimates change in different directions from OLS. Comparing the coefficients, some are closer to zero (GLS compared to OLS)  while one is farther away from zero. 
+```{r, echo=TRUE, fig.show='hold'}
+# Fit GLS
+fitgls <- lmnet(r$Y, X, reweight=T) 
+cat("Converged?:", fitgls$converged, "\nNumber of iterations:", fitgls$nit)
+```
+
+
+```{r, echo=FALSE, results='asis'}
+coeftable <- cbind(coef(lm(r$Y ~ X - 1)), coef(fitgls))
+colnames(coeftable) <- c("OLS", "GLS")
+knitr::kable(round(coeftable, 4), caption="Coefficients for OLS and GLS fits of complete, directed data.")
+```
+
+In addition, we may use the ``empirical'' dyadic clustering estimator to take into account excess heterogeneity. Note that these standard error estimates are not necessarily more conservative.
+```{r, echo=TRUE, results='asis'}
+# exchangeable standard errors:
+see <- sqrt(diag( vcov(fitgls) ))
+# dyadic clustering standard errors:
+sedc <- sqrt(diag( vnet(fit=fitgls, type="dyadic clustering")$vhat )) 
+```
+
+
+```{r, echo=FALSE}
+setable <- data.frame( "exchangeable"=see, "dyadic_clustering"=sedc )
+knitr::kable(round(setable, 4), caption="Standard errors of GLS coefficient estimates based on complete, directed data.")
+```
+
+
+### Complete data, undirected
+We now demonstrate the undirected case. We symmetrize the response and age difference covariate. This model suggests there is a significant relationship between age difference and dominance behavior.
+```{r, fig.show='hold'}
+# list of data with symmetrized response Y:
+wolf_undir <- .5*(wolf$wolf + t(wolf$wolf))
+vlist <- list(abs(wolf$wolf_age_diff), wolf$wolf_same_sex, Y=wolf_undir)   
+# process inputs that adds intercept by default and treats as directed network by default
+ru <- inputs_lmnet(vlist, directed=F)
+X <- ru$X  ;  colnames(X) <- c("Intercept", "abs_age_diff", "same_sex")
+fit <- lmnet(ru$Y, X, directed=F, reweight=T) 
+summary(fit)     # print summary
+```
+
+
+### Missing data, directed
+There are several off-diagonal entries in the response matrix that are zero. We now omit these entries (as they may be unobserved rather than true zeros). To omit entries in the regression, we may simply place NAs in the omitted entries in $Y$.
+
+In this case, the node labels returned from `inputs_lmnet` must be used to avoid an error. Alternatively, the nodes corresponding to each relation may be entered manually. Order is immaterial. 
+
+This model finds a significant relationship between wolf sex and dominance behavior. 
+```{r, fig.show='hold'}
+Y <- wolf$wolf   # response
+Y[which(wolf_undir == 0)] <- NA   # place omissionns in NA
+r <- inputs_lmnet(list(wolf$wolf_age_diff, wolf$wolf_same_sex, Y=Y))   
+X <- r$X  ;  colnames(X) <- c("Intercept", "abs_age_diff", "same_sex")
+# fit <- lmnet(r$Y, X)  # returns an error!
+
+scramble <- sample(1:nrow(X))   # random reordering
+fit <- lmnet(r$Y, X, nodes=r$nodes, reweight=T)
+fit1 <- lmnet(r$Y[scramble], X[scramble,], nodes=r$nodes[scramble,], reweight=T)
+range(coef(fit) - coef(fit1))   # same coefficient entries, e.g.
+summary(fit)     # print summary
+```
+
+
+# Covariance matrix exmple
+In [@marrs2017] we define the class of covariance matrices resulting from errors (for example) that are exchangeable. We prove that these matrices have at most six unique terms, and in the paper we assume $\phi_6 = 0$. We implement the function `rphi(.)` to randomly generate these six parameters for positive definite covariance matrices. In addition, for complete data, we provide a function to efficiently invert these matrices, `invert_exchangeable_matrix(.)`. Below we demonstrate these functions for directed data; however, the application to undirected data is analogous.
+
+```{r, fig.show='hold'}
+n <- 10
+phi1 <- rphi(n, seed=1)    # 6 parameters of random positive definite matrix
+phi2 <- rphi(n, seed=1, phi6=T)   # with nonzero 6th parameter
+
+O1 <- build_exchangeable_matrix(n, phi1)   # exchangeable matrix from parameters
+min(eigen(O1)$values) > 0   # positive definite?
+
+p1 <- invert_exchangeable_matrix(n, phi1)  # 6 parameters of interted matrix
+p2 <- invert_exchangeable_matrix(n, phi2) 
+
+I1 <- O1 %*% build_exchangeable_matrix(n, p1)
+range(I1 - diag(nrow(I1)))   # inverse works
+
+I2 <- build_exchangeable_matrix(n, phi2) %*% build_exchangeable_matrix(n, p2)
+range(I2 - diag(nrow(I2))) # inverse works
+```
+
+# References

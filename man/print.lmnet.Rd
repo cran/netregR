@@ -2,11 +2,15 @@
 % Please edit documentation in R/lmnet.R
 \name{print.lmnet}
 \alias{print.lmnet}
-\title{Print generic for class lmnet}
+\title{Print S3 generic for class lmnet}
 \usage{
-\method{print}{lmnet}(x)
+\method{print}{lmnet}(x, ...)
+}
+\arguments{
+\item{x}{lmnet object}
+
+\item{...}{ignored}
 }
 \description{
-Print generic for class lmnet
+Print S3 generic for class lmnet
 }
-\keyword{internal}

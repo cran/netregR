@@ -2,11 +2,15 @@
 % Please edit documentation in R/lmnet.R
 \name{coef.lmnet}
 \alias{coef.lmnet}
-\title{Coef generic for class lmnet}
+\title{Coef S3 generic for class lmnet}
 \usage{
-\method{coef}{lmnet}(x)
+\method{coef}{lmnet}(object, ...)
+}
+\arguments{
+\item{object}{lmnet object}
+
+\item{...}{ignored}
 }
 \description{
-Coef generic for class lmnet
+Coef S3 generic for class lmnet
 }
-\keyword{internal}

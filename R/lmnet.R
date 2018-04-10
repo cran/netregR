@@ -90,6 +90,10 @@ lmnet <- function(Y, X, directed=T, nodes=NULL, reweight=FALSE, tol=1e-6, maxit=
     betaout <- beta_weighted
     Vout <- Vhat_weighted
     flagout <- as.logical(Vflag_weighted == 1)
+    
+    bread = Vout
+    W <- fit_weighted$W
+    
   } else {
     beta_weighted <- Vhat_weighted <- Vflag_weighted  <- nit <- tol <- conv <- NA
     
@@ -97,6 +101,10 @@ lmnet <- function(Y, X, directed=T, nodes=NULL, reweight=FALSE, tol=1e-6, maxit=
     Vout <- Vhat_ols
     flagout <- as.logical(Vflag_ols == 1)
     phiout=phi_ols
+    W <- diag(nrow(X))
+    
+    bread <- XX 
+
   }
   ####
   
@@ -106,15 +114,19 @@ lmnet <- function(Y, X, directed=T, nodes=NULL, reweight=FALSE, tol=1e-6, maxit=
   fitout <- list(call=match.call(), coefficients=betaout, residuals=e, vcov=Vout, fitted.values=X %*% betaout,
                  df=df, sigma=sqrt(phiout[1]), 
                  reweight=reweight,
-                 corrected=flagout, phi_hat=phiout, nit=nit, converged=conv)
+                 corrected=flagout, phi_hat=phiout, nit=nit, converged=conv, 
+                 X=X, nodes=nodes,
+                 bread=bread, W=W)
   class(fitout) <- "lmnet"
   return(fitout)
 }
 
 
-#' Print generic for class lmnet
-#' @keywords internal
-print.lmnet <- function(x)
+#' Print S3 generic for class lmnet
+#' @export
+#' @param x lmnet object
+#' @param ... ignored
+print.lmnet <- function(x, ...)
 {
   cat("\nCall: \n")
   print(x$call)
@@ -124,25 +136,33 @@ print.lmnet <- function(x)
 }
 
 
-#' Coef generic for class lmnet
-#' @keywords internal
-coef.lmnet <- function(x)
+#' Coef S3 generic for class lmnet
+#' @export
+#' @param object lmnet object
+#' @param ... ignored
+coef.lmnet <- function(object, ...)
 {
-  x$coefficients
-}
-
-#' vcov generic for class lmnet
-#' @keywords internal
-vcov.lmnet <- function(x)
-{
-  x$vcov
+  object$coefficients
 }
 
 
-#' Summary generic for class lmnet
-#' @keywords internal
-summary.lmnet <- function(x)
+#' vcov S3 generic for class lmnet
+#' @export
+#' @param object lmnet object
+#' @param ... ignored
+vcov.lmnet <- function(object, ...)
 {
+  object$vcov
+}
+
+
+#' Summary S3 generic for class lmnet
+#' @export
+#' @param object lmnet object
+#' @param ... ignored
+summary.lmnet <- function(object, ...)
+{
+  x <- object
   out <- matrix(coef(x), ncol=1)
   out <- cbind(out, sqrt(diag(vcov(x))))
   out <- cbind(out, out[,1] / out[,2])
@@ -156,9 +176,11 @@ summary.lmnet <- function(x)
 }
 
 
-#' Print generic for class summary.lmnet
-#' @keywords internal
-print.summary.lmnet <- function(x)
+#' Print S3 generic for class summary.lmnet
+#' @export
+#' @param x summary.lmnet object
+#' @param ... ignored
+print.summary.lmnet <- function(x, ...)
 {
   cat("\nCall:\n")
   print(x$call)
@@ -167,9 +189,11 @@ print.summary.lmnet <- function(x)
 }
 
 
-#' Plot generic for class summary.lmnet
-#' @keywords internal
-plot.lmnet <- function(x)
+#' Plot S3 generic for class lmnet
+#' @export
+#' @param x lmnet object
+#' @param ... ignored
+plot.lmnet <- function(x, ...)
 {
   hist(scale(resid(x)), freq=F, xlab="standardized residuals", main="")
   
@@ -179,3 +203,12 @@ plot.lmnet <- function(x)
   abline(0,1, col="red")
 }
 
+
+#' model.matrix S3 generic for class lmnet
+#' @export
+#' @param object lmnet object
+#' @param ... ignored
+model.matrix.lmnet <- function(object, ...)
+{
+  object$X
+}

@@ -2,11 +2,15 @@
 % Please edit documentation in R/lmnet.R
 \name{plot.lmnet}
 \alias{plot.lmnet}
-\title{Plot generic for class summary.lmnet}
+\title{Plot S3 generic for class lmnet}
 \usage{
-\method{plot}{lmnet}(x)
+\method{plot}{lmnet}(x, ...)
+}
+\arguments{
+\item{x}{lmnet object}
+
+\item{...}{ignored}
 }
 \description{
-Plot generic for class summary.lmnet
+Plot S3 generic for class lmnet
 }
-\keyword{internal}

@@ -73,8 +73,13 @@ GEE.est <- function(row.list, Y, X, n, directed=T, beta_start=NULL, missing=F, d
   if(verbose){
     cat("\n Weighted estimation complete \n")
   }
-  output <- list(beta_weighted, e, XWX, phi, count.in, as.logical(count.in < maxit))
-  names(output) <- c('beta','residuals','bread', 'phi', 'nit', 'convergence')
+  
+  if(!missing){
+    W <- build_exchangeable_matrix(n, inv_phi, directed, dyads)
+  }
+  
+  output <- list(beta_weighted, e, XWX, phi, count.in, as.logical(count.in < maxit), W)
+  names(output) <- c('beta','residuals','bread', 'phi', 'nit', 'convergence', 'W')
   
   return(output)
 }
@@ -325,6 +330,38 @@ meat.E.row <- function(row.list, X, e)
   
   return(list(M=meat.out, phi=phi))
 }
+
+
+#' Calculate DC meat using rows of X, e
+#'
+#' @keywords internal
+meat.DC.row <- function(row.list, X, e)
+{
+  # Build meat for exchangeable variances estimator
+  # Takes in design matrix X.1, residuals e.1, and list of overlapping nodes 
+  
+  
+  # sizes
+  p <- ncol(X)
+  
+  # Estimates
+  phi <- rep(0, length(row.list))
+  eX <- sweep(X, 1, e, "*")
+  meat.1 <- crossprod(eX)
+  
+  meat.2 <- matrix(0,p,p)
+  for (i in 2:length(row.list)){
+    r <- matrix( row.list[[i]], ncol=2)
+    if(nrow(r) > 0){
+      meat.2 <- meat.2 + crossprod(eX[r[,1], ,drop=F], eX[r[,2], ,drop=F])  + crossprod(eX[r[,2], ,drop=F], eX[r[,1], ,drop=F])
+    }
+  }
+  
+  meat.out <- meat.2 + meat.1
+  
+  return(list(M=meat.out, phi=NA))
+}
+
 
 
 #' Calculate parameter estimates using rows of e
