@@ -50,7 +50,7 @@ In general, $W$ is not known. However, one method for attaining an estimate of $
 \end{align}
 where $\widehat{W}_{final}$ is the estimate of $W$ at convergence. 
 
-In some cases, it may be reasonable to assume that, although the exchangeable assumption is reasonable, the true covariance structure is actually more flexible. In these cases, estimates of the variance-covariance matrix of the errors that are empirical \emph{might} be more appropriate. Here, one might choose to use the "dyadic clustering"" estimator of [@fafchamps2007formation] to estimate the variance of the errors, which we denote $\widehat{V}_{DC}[\boldsymbol{\epsilon}]$. This leads to another consistent estimator of the GLS coefficients:
+In some cases, it may be reasonable to assume that, although the exchangeable assumption is reasonable, the true covariance structure is actually more flexible. In these cases, estimates of the variance-covariance matrix of the errors that are empirical \emph{might} be more appropriate. Here, one might choose to use the "dyadic clustering" estimator of [@fafchamps2007formation] to estimate the variance of the errors, which we denote $\widehat{V}_{DC}[\boldsymbol{\epsilon}]$. This leads to another consistent estimator of the GLS coefficients:
 \begin{align}
 \widehat{V}\left[\widehat{\boldsymbol{\beta}}_{GLS} \ \big| \ X \right] = \left(X^T \widehat{W}_{final} X \right)^{-1} \left(X^T \widehat{W}_{final}^T \widehat{V}_{DC}[\boldsymbol{\epsilon}] \widehat{W}_{final} X \right) \left(X^T \widehat{W}_{final} X \right)^{-1}.
 \end{align}
@@ -114,7 +114,7 @@ colnames(coeftable) <- c("OLS", "GLS")
 knitr::kable(round(coeftable, 4), caption="Coefficients for OLS and GLS fits of complete, directed data.")
 ```
 
-In addition, we may use the ``empirical'' dyadic clustering estimator to take into account excess heterogeneity. Note that these standard error estimates are not necessarily more conservative.
+In addition, we may use the "empirical" dyadic clustering estimator to take into account excess heterogeneity. Note that these standard error estimates are not necessarily more conservative.
 ```{r, echo=TRUE, results='asis'}
 # exchangeable standard errors:
 see <- sqrt(diag( vcov(fitgls) ))

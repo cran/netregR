@@ -41,24 +41,26 @@ rphi <- function(n, seed=NULL, phi6=FALSE, directed=TRUE)
       if(!phi6){
         phi[6] <- 0
       }
-      C <- build_phi_matrix(n,phi)
+      # C <- build_phi_matrix(n,phi)
       # C0 <- build_phi_matrix(n,phi0)
       
-      mineig <- min(eigen(C)$values)
+      # mineig <- min(eigen(C)$values)
       #min(min(eigen(C)$values), min(eigen(C0)$values))
+      mineig <- min( eigen_exch(n, phi, TRUE, FALSE)$uniquevals )
+      
     }
-    S <- Sigma.ind(n,T)
-    if(phi6){
-      Omega <- Reduce("+", lapply(1:6, function(z) phi[z]*S[[z]]))
-    } else {
-      Omega <- Reduce("+", lapply(1:5, function(z) phi[z]*S[[z]]))
-    }
-    # Omega0 <- Reduce("+", lapply(1:6, function(z) phi0[z]*S[[z]]))
-    if( min(eigen(Omega)$values) <= 0){ 
-      warning("C eigens did not carry over to Omega")
-      if(is.numeric(seed)){seed <-  seed + 1} else {seed <- sample(1:1000, 1)}
-      phi <- rphi(n, seed, directed)
-    }
+    # S <- Sigma.ind(n,T)
+    # if(phi6){
+    #   Omega <- Reduce("+", lapply(1:6, function(z) phi[z]*S[[z]]))
+    # } else {
+    #   Omega <- Reduce("+", lapply(1:5, function(z) phi[z]*S[[z]]))
+    # }
+    # # Omega0 <- Reduce("+", lapply(1:6, function(z) phi0[z]*S[[z]]))
+    # if( min(eigen(Omega)$values) <= 0){ 
+    #   warning("C eigens did not carry over to Omega")
+    #   if(is.numeric(seed)){seed <-  seed + 1} else {seed <- sample(1:1000, 1)}
+    #   phi <- rphi(n, seed, directed)
+    # }
     
   } else {   # undirected
     phi <- c(1,0,0)

@@ -58,7 +58,7 @@ hljs.initHighlightingOnLoad();
 </script>
 
 <!-- MathJax scripts -->
-<script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+<script type="text/javascript" src="https://cdn.bootcss.com/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML">
 </script>
 
 
@@ -236,7 +236,7 @@ In general, \(W\) is not known. However, one method for attaining an estimate of
 \end{align}
 where \(\widehat{W}_{final}\) is the estimate of \(W\) at convergence. </p>
 
-<p>In some cases, it may be reasonable to assume that, although the exchangeable assumption is reasonable, the true covariance structure is actually more flexible. In these cases, estimates of the variance-covariance matrix of the errors that are empirical \emph{might} be more appropriate. Here, one might choose to use the &ldquo;dyadic clustering&rdquo;&ldquo; estimator of [@fafchamps2007formation] to estimate the variance of the errors, which we denote \(\widehat{V}_{DC}[\boldsymbol{\epsilon}]\). This leads to another consistent estimator of the GLS coefficients:
+<p>In some cases, it may be reasonable to assume that, although the exchangeable assumption is reasonable, the true covariance structure is actually more flexible. In these cases, estimates of the variance-covariance matrix of the errors that are empirical \emph{might} be more appropriate. Here, one might choose to use the &ldquo;dyadic clustering&rdquo; estimator of [@fafchamps2007formation] to estimate the variance of the errors, which we denote \(\widehat{V}_{DC}[\boldsymbol{\epsilon}]\). This leads to another consistent estimator of the GLS coefficients:
 \begin{align}
 \widehat{V}\left[\widehat{\boldsymbol{\beta}}<em>{GLS} \ \big| \ X \right] = \left(X<sup>T</sup> \widehat{W}</em>{final} X \right)<sup>{-1}</sup> \left(X<sup>T</sup> \widehat{W}<em>{final}<sup>T</sup> \widehat{V}</em>{DC}[\boldsymbol{\epsilon}] \widehat{W}<em>{final} X \right) \left(X<sup>T</sup> \widehat{W}</em>{final} X \right)<sup>{-1}.</sup>
 \end{align}
@@ -252,7 +252,7 @@ We emphasize that this estimator should be used only when excess heterogeneity i
 
 <h3>Complete data, directed</h3>
 
-<p>We load the wolf data and place into a list. The inputs to the main function of the <code>netregR</code> package, <code>lmnet(.)</code>, requires a vectorized \(Y\) and a matrix \(X\) as in typical linear regression equation. However, we provide the function <code>inputs_lmnet(.)</code> to process inputs that are in the form of adjacency matrices. The function <code>inputs_lmnet(.)</code> takes inputs in the form of a list, one of which must be named &quot;Y&rdquo; (unless \(Y\) is input separately, optional). The function <code>inputs_lmnet(.)</code> adds an intercept and returns \(Y\) and \(X\) in the appropriate form.</p>
+<p>We load the wolf data and place into a list. The inputs to the main function of the <code>netregR</code> package, <code>lmnet(.)</code>, requires a vectorized \(Y\) and a matrix \(X\) as in typical linear regression equation. However, we provide the function <code>inputs_lmnet(.)</code> to process inputs that are in the form of adjacency matrices. The function <code>inputs_lmnet(.)</code> takes inputs in the form of a list, one of which must be named &ldquo;Y&rdquo; (unless \(Y\) is input separately, optional). The function <code>inputs_lmnet(.)</code> adds an intercept and returns \(Y\) and \(X\) in the appropriate form.</p>
 
 <pre><code class="r">data(&quot;wolf&quot;)
 # list of data with named response Y:
@@ -336,7 +336,7 @@ cat(&quot;Converged?:&quot;, fitgls$converged, &quot;\nNumber of iterations:&quo
 </code></pre>
 
 <pre><code>## Converged?: TRUE 
-## Number of iterations: 3
+## Number of iterations: 2
 </code></pre>
 
 <table><thead>
@@ -363,7 +363,7 @@ cat(&quot;Converged?:&quot;, fitgls$converged, &quot;\nNumber of iterations:&quo
 </tr>
 </tbody></table>
 
-<p>In addition, we may use the &ldquo;empirical&#39;&#39; dyadic clustering estimator to take into account excess heterogeneity. Note that these standard error estimates are not necessarily more conservative.</p>
+<p>In addition, we may use the &ldquo;empirical&rdquo; dyadic clustering estimator to take into account excess heterogeneity. Note that these standard error estimates are not necessarily more conservative.</p>
 
 <pre><code class="r"># exchangeable standard errors:
 see &lt;- sqrt(diag( vcov(fitgls) ))
@@ -380,18 +380,18 @@ sedc &lt;- sqrt(diag( vnet(fit=fitgls, type=&quot;dyadic clustering&quot;)$vhat 
 </thead><tbody>
 <tr>
 <td align="left">XIntercept</td>
-<td align="right">4.2111</td>
-<td align="right">4.9179</td>
+<td align="right">4.2089</td>
+<td align="right">4.9173</td>
 </tr>
 <tr>
 <td align="left">Xage_diff</td>
-<td align="right">1.3623</td>
-<td align="right">1.7684</td>
+<td align="right">1.3628</td>
+<td align="right">1.7773</td>
 </tr>
 <tr>
 <td align="left">Xsame_sex</td>
-<td align="right">3.7850</td>
-<td align="right">2.1205</td>
+<td align="right">3.7855</td>
+<td align="right">2.1164</td>
 </tr>
 </tbody></table>
 
@@ -415,9 +415,9 @@ summary(fit)     # print summary
 ## 
 ## Coefficients:
 ##               Estimate Std. Error t value Pr(|t| &gt; 0)   
-## XIntercept     12.4119     4.9932  2.4858    0.007176 **
-## Xabs_age_diff   2.1384     1.1893  1.7980    0.037386 * 
-## Xsame_sex       2.2827     3.7635  0.6065    0.272674   
+## XIntercept     12.4119     4.9856  2.4896    0.007104 **
+## Xabs_age_diff   2.1384     1.1883  1.7996    0.037263 * 
+## Xsame_sex       2.2827     3.7649  0.6063    0.272751   
 ## ---
 ## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 </code></pre>
@@ -442,7 +442,7 @@ fit1 &lt;- lmnet(r$Y[scramble], X[scramble,], nodes=r$nodes[scramble,], reweight
 range(coef(fit) - coef(fit1))   # same coefficient entries, e.g.
 </code></pre>
 
-<pre><code>## [1] -1.776357e-14 -8.881784e-16
+<pre><code>## [1] -3.552714e-14  0.000000e+00
 </code></pre>
 
 <pre><code class="r">summary(fit)     # print summary
@@ -454,9 +454,9 @@ range(coef(fit) - coef(fit1))   # same coefficient entries, e.g.
 ## 
 ## Coefficients:
 ##               Estimate Std. Error t value Pr(|t| &gt; 0)    
-## XIntercept     17.6547     4.7195  3.7408   0.0001173 ***
-## Xabs_age_diff  -4.2229     1.4372 -2.9382   0.0018280 ** 
-## Xsame_sex       6.6012     3.8478  1.7156   0.0438310 *  
+## XIntercept     17.6547     4.6880  3.7660   0.0001067 ***
+## Xabs_age_diff  -4.2229     1.4436 -2.9253   0.0019026 ** 
+## Xsame_sex       6.6012     3.8562  1.7119   0.0441729 *  
 ## ---
 ## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 </code></pre>

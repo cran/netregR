@@ -34,14 +34,19 @@ GEE.est <- function(row.list, Y, X, n, directed=T, beta_start=NULL, missing=F, d
       # W <- build_exchangeable_matrix(n, inv_phi, directed, dyads)
       XWX <- meatABC(row.list, inv_phi, X, X, directed)
       XWY <- meatABC(row.list, inv_phi, X, matrix(Y, ncol=1), directed)
+      # mine <- min( eigen_exch(n, inv_phi, directed, FALSE)$uniquevals )
       
     } else {  # must invert directly with missingness
       Winv <- build_exchangeable_matrix(n, phi, directed, dyads)
       W <- solve(Winv)  
       XWX <- crossprod(X,W) %*% X
       XWY <- crossprod(X,W) %*% Y
-      
+      # mine <- min( eigen(W)$values )
     }
+    # if(mine < -.Machine$double.eps^.5){
+    #   warning("Negative definite weight matrix encountered")
+    #   cat(mine, "\n")
+    # }
     
     
     beta_new <- as.vector( solve(XWX, XWY) )
@@ -56,7 +61,8 @@ GEE.est <- function(row.list, Y, X, n, directed=T, beta_start=NULL, missing=F, d
       print(warnings())
       cat('************************************ \n')
     }
-    delta.loop <- as.numeric( -(Q.new - Q.old) )      # decrease in criterion
+    delta.loop <- Q.new   # change in beta_hat
+      # as.numeric( -(Q.new - Q.old) )      # decrease in criterion
     if(delta.loop > 0){   # if continuing to decrease
       delta.loop <- delta.loop / Q.old * 100
     }
@@ -760,4 +766,82 @@ meatABC <- function(row.list, phi, A, C, directed)
   return(out)
 }
 
+
+
+
+#' Eigenvalues of exchangeable matrices
+#'  if calcall == TRUE, then output eigenvalues with multiplicities
+#'  Outputs eigenvectors when directed==FALSE
+#'
+#' @keywords internal
+eigen_exch <- function(n, phi, directed=FALSE, calcall=TRUE)
+{
+  if(!directed & length(phi) != 3){ stop("Wrong length of phi")}
+  
+  if(directed){ 
+    # stop("Directed not implemented yet")
+    
+    rho <- phi/phi[1]
+    e <- rep(0, 5)
+    e[1] <- 1 + rho[2] + (n-2)*(rho[3] + rho[4]) + (2*n - 4)*rho[5]
+    e[2] <- 1 + rho[2] - rho[3] - rho[4] - 2*rho[5]
+    e[3] <- 1 - rho[2] - rho[3] - rho[4] + 2*rho[5]
+    
+    q0 <- ((n-3)*(rho[3] + rho[4]) - 2*rho[5] + 2)*.5
+    q1 <- (rho[3]^2 + rho[4]^2)*(n^2 -2*n + 1) + 4*rho[5]^2*(n^2 -6*n + 9) + 2*rho[3]*rho[4]*(1 - n^2 + 2*n)
+    q2 <- rho[2]*rho[5]*(8*n - 24) + (rho[3] + rho[4])*rho[5]*(12 - 4*n) + 4*rho[2]*(rho[2] - rho[3] - rho[4])
+    
+    if(phi[6] == 0){ 
+      q <- sqrt(q1 + q2) / 2
+      e[4] <- q0 + q
+      e[5] <- e[4] - 2*q
+      
+    } else {
+      ee <- phi[6]
+      e[1] <- e[1] + (n-2)*(n-3)*ee
+      e[2] <- e[2] + 2*ee
+      q0 <- q0 - (n-3)*ee
+      delta <- 4*ee^2*(n-3)^2 + ee*( -8*rho[5]*(n-3)^2 - 8*rho[2]*(n-3) + 4*(n-3)*(rho[3]+rho[4]))
+      q1 <- q1 + delta
+      q <- sqrt(q1 + q2) / 2
+      e[4] <- q0 + q
+      e[5] <- e[4] - 2*q
+    }
+    
+    
+    if(calcall){
+      efull <- phi[1]*c(e[1], rep(e[2], (n-1)*(n-2)/2 - 1), rep(e[3], (n-1)*(n-2)/2), rep(e[4], n-1), rep(e[5], n-1))
+      vfull <- NA
+    } else {
+      efull <- NA
+      vfull <- NA
+    }
+    
+  } else {
+    
+    C2 <- rbind(c(0,  2*(n-2),  0), 
+                c(1,  n-2,  n-3),
+                c(0,  4,  2*(n-2) - 4))    # use this for code, multiplicities are WEIRD!
+    e2 <- eigen(C2)$values
+    v2 <- eigen(C2)$vectors
+    
+    C3 <- rbind(c(0,  0,  .5*(n-2)*(n-3)),
+                c(0,  n - 3,  .5*(n-2)*(n-3) - (n-3)),
+                c(1,  2*(n-4),  .5*(n-2)*(n-3) - 2*(n - 4) - 1) )    # use this for code, multiplicities are WEIRD!
+    e3 <- eigen(C3)$values
+    v3 <- eigen(C3)$vectors
+    
+    e <- phi[1] + phi[2]*e2 + phi[3]*e3
+    # efull <- c(e[1], rep(e[2], 2*(n-2)), rep(e[3], .5*(n-2)*(n-3)))
+    efull <- c(e[1], rep(e[2], n-1), rep(e[3], .5*n*(n-3)))
+    
+    # v <- phi[1] + phi[2]*v2 + phi[3]*v3
+    v <- v3
+    vfull <- rbind(v[1,], 
+                   matrix(rep(v[2,],  2*(n-2)), nrow=2*(n-2),  byrow = T),
+                   matrix(rep(v[3,],  .5*(n-2)*(n-3)), nrow=.5*(n-2)*(n-3),  byrow = T))
+    
+  }
+  return(list(values=efull, vectors=vfull, uniquevals=e))
+}
 
