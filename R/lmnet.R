@@ -8,14 +8,21 @@
 #' @param Y Vector of relations to be regress, of length \eqn{d}. Column-wise vectorization of adjacency matrix without diagonal entries (self-loops).
 #' @param X Matrix of covariates to be regressed upon, including intercept if intercept is desired, must have \eqn{d} rows. Ordering of rows should match \code{Y} and optional input \code{nodes}.
 #' @param directed Optional logical indicator of whether input data is for a directed network, default is \code{TRUE}. Undirected data format is lower triangle of adjacencey matrix. 
+#' @param tmax Optional numeric of third dimension of relational data array, default is \code{1}, i.e. a relational matrix. 
 #' @param nodes Optional \eqn{d \times 2} matrix indicating the (directed) relation pairs to which each entry in \eqn{Y} and each row in \eqn{X} corresponds. If not input, complete network observation with column-wise vectorization of adjacency matrix without diagonal entries (self-loops) is assumed. The size \eqn{d} and \code{directed} must correspond to an appropriate network of size \eqn{n}. 
 #' @param reweight Optional logical indicator of whether iteratively reweighted least squares should be used to compute estimate of \eqn{\beta}. Default is \code{FALSE}.
+#' @param type Optional character specifying degree of exchangeability of third dimension of array (when present, i.e. in temporal relational arrays). Default is \code{exchangeable}, and the remaining option is \code{independent}. Truncated inputs are accepted. See details below.
 #' @param tol Optional numeric, tolerance of stopping criteria of iteratively reweighted least squares estimate of \eqn{\beta}. Default is \code{tol=1e-6}.
 #' @param maxit Optional numeric, maximum number of iterations for iteratively reweighted least squares estimate of \eqn{\beta}. Default is \code{maxit=1e4}.
+#' @param ndstop Optional logical indicator of whether negative definite weighting matrix in iteratively reweighted least squares should stop the descent. Default is \code{TRUE}.
 #' @param verbose Optional logical indicator of whether information from iteratively reweighted least squares estimate of \eqn{\beta} should be printed. Default is \code{FALSE}.
 #' 
 #' 
-#' @details This function takes \eqn{X} and \eqn{Y} values and fits the multiple linear regression \eqn{Y = X \beta + \epsilon} by ordinary least squares or iteratively reweighted least squares as indicated by the input. The covariance structure is exchangeable from that of Marrs (2017). The standard errors and test statistics are based on the same paper.  
+#' @details This function takes \eqn{X} and \eqn{Y} values and fits the multiple linear regression \eqn{Y = X \beta + \epsilon} by ordinary least squares or iteratively reweighted least squares as indicated by the input. The covariance structure is exchangeable from that of Marrs (2017). The standard errors and test statistics are based on the same paper.  \\  In the three dimensional relational array case, i.e. temporal relational data, requires a specification of the type of exchangeability in this third dimension. We may assume that different time periods are independent. On the other hand, we might assume each repeated observation is exchangeable (for example decomposing trade networks into type of ). See Figure 6a of Marrs et. al. (2017) for the exchangeable case and the surrounding discussion for the independent case.
+#' 
+#' 
+#' 
+#' 
 #'
 #' @return 
 #' \item{fit}{An \code{lmnet} object containing summary information.}
@@ -36,12 +43,19 @@
 #' fit2 <- lmnet(Y,X,reweight=TRUE)
 #' fit2
 #' 
-lmnet <- function(Y, X, directed=T, nodes=NULL, reweight=FALSE, tol=1e-6, maxit=1e4, verbose=FALSE)
+lmnet <- function(Y, X, directed=TRUE, tmax=1, nodes=NULL, reweight=FALSE, type="exchangeable", tol=1e-6, maxit=1e4, ndstop=TRUE, verbose=FALSE)
 {
   
   #### Data check and formats
-  temp <- node_preprocess(Y,X,directed,nodes)
-  Y <- temp$Y  ;  X <- temp$X  ;  missing <- temp$missing  ;  row_list <- temp$row_list  ;  dyads <- temp$dyads  ;  n <- temp$n
+  tmax <- as.numeric(tmax)
+  directed <- as.logical(directed)
+  
+  if(tmax == 1){
+    temp <- node_preprocess(Y,X,directed,nodes)
+  } else {
+    temp <- node_preprocess_time(Y,X,directed,nodes,tmax,type,subtract=NULL)
+  }
+  Y <- temp$Y  ;  X <- temp$X  ;  missing <- temp$missing  ;  row_list <- temp$row_list  ;  dyads <- temp$dyads  ;  n <- temp$n  ;  type <- temp$type
   rm(temp)
   reweight <- as.logical(reweight)
   tol <- as.numeric(tol)
@@ -51,6 +65,9 @@ lmnet <- function(Y, X, directed=T, nodes=NULL, reweight=FALSE, tol=1e-6, maxit=
   ####
   
   
+  if(missing & tmax > 1){
+    stop("Missing data not yet implemented for temporal data")
+  }
   
   
   #### Initial fits
@@ -74,7 +91,14 @@ lmnet <- function(Y, X, directed=T, nodes=NULL, reweight=FALSE, tol=1e-6, maxit=
   
   #### GEE fit if desired
   if(reweight){  # compute GEE fit
-    fit_weighted <- GEE.est(row_list, Y, X, n, directed, tol.in=tol, beta_start=beta_ols, missing=missing, dyads=dyads, verbose=verbose)
+    if(tmax ==1){
+      fit_weighted <- GEE.est(row_list, Y, X, n, directed, tol.in=tol, beta_start=beta_ols, missing=missing, dyads=dyads, ndstop=ndstop, verbose=verbose)
+    } else if (tmax > 1){
+      fit_weighted <- GEE_est_time(Y, X, n, tmax,  directed, type, write_dir=NULL, missing=missing, tol.in=tol, maxit=maxit, verbose=verbose) 
+    } else {
+      stop("tmax must be a positive integer")
+    }
+    
     beta_weighted <- fit_weighted$beta
     v0 <- make.positive.var( solve( fit_weighted$bread ) )
     e <- fit_weighted$residuals
@@ -93,7 +117,7 @@ lmnet <- function(Y, X, directed=T, nodes=NULL, reweight=FALSE, tol=1e-6, maxit=
     
     bread = Vout
     W <- fit_weighted$W
-    
+  
   } else {
     beta_weighted <- Vhat_weighted <- Vflag_weighted  <- nit <- tol <- conv <- NA
     
@@ -116,7 +140,8 @@ lmnet <- function(Y, X, directed=T, nodes=NULL, reweight=FALSE, tol=1e-6, maxit=
                  reweight=reweight,
                  corrected=flagout, phi_hat=phiout, nit=nit, converged=conv, 
                  X=X, nodes=nodes,
-                 bread=bread, W=W)
+                 bread=bread, W=W,
+                 tmax=tmax, type=type, ndstop=ndstop)
   class(fitout) <- "lmnet"
   return(fitout)
 }

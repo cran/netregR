@@ -6,7 +6,7 @@
 \title{Variance computation for linear regression of network response}
 \usage{
 vnet(e = NULL, X = NULL, directed = TRUE, nodes = NULL,
-  type = "exchangeable", fit = NULL)
+  type = "exchangeable", tmax = 1, fit = NULL)
 }
 \arguments{
 \item{e}{Optional vector of residuals, of length \eqn{d}. Column-wise unfolding of adjacency matrix without diagonal entries (self-loops).}
@@ -19,6 +19,8 @@ vnet(e = NULL, X = NULL, directed = TRUE, nodes = NULL,
 
 \item{type}{Optional string indicating whether the `meat' in the sandwich variance estimator is estimated using exchangeable theory (see Marrs et. al. (2017)) or using dyadic clustering (Fafchamps and Gubert (2007)).}
 
+\item{tmax}{Optional numeric of third dimension of relational data array, default is \code{1}, i.e. a relational matrix. Currently only accepts \code{tmax = 1}.}
+
 \item{fit}{Optional fitted model object. One of either \code{fit} or the pair \code{(e, X)} must be specified. Defaults to \code{fit} if both entered. Designed around `lmnet' class but may work for others, such as `lm'}
 }
 \value{
@@ -26,7 +28,8 @@ A an object of class \code{vhat} containing summary information:
 \item{vhat}{Estimated variance-covariance matrix of cofficient estimates \eqn{\hat{\beta}}.}
 \item{phi}{Vector of variance-covariance parameter estimates.}
 \item{corrected}{Logical of whether variance-covariance matrix was corrected from negative definite to positive semi-definite.}
-\item{type}{See inputs}
+\item{type}{See inputs.}
+\item{tmax}{See inputs.}
 }
 \description{
 Stand-alone estimation of exchangeable variance matrix based on residuals and design matrix.

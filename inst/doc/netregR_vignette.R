@@ -70,6 +70,38 @@ range(coef(fit) - coef(fit1))   # same coefficient entries, e.g.
 summary(fit)     # print summary
 
 ## ---- fig.show='hold'----------------------------------------------------
+data("interactions")   # load social interactions data set
+# process data into input format
+temp <- inputs_lmnet(Xlist=list(Y=interactions$interactions, X1=interactions$xbinary,
+                     X2=interactions$xabs), directed = TRUE, add_intercept=TRUE, 
+                     time_intercept = TRUE)  
+# OLS with independence in third dimension
+fit1 <- lmnet(temp$Y, temp$X, directed=TRUE, tmax=5, 
+              nodes=temp$nodes, reweight=FALSE,  type="ind")
+# OLS with exchangeability in third dimension
+fit2 <- lmnet(temp$Y, temp$X, directed=TRUE, tmax=5, 
+              nodes=temp$nodes, reweight=FALSE,  type="exch")  
+# GLS with exchangeability in third dimension
+fit3 <- lmnet(temp$Y, temp$X, directed=TRUE, tmax=5, 
+              nodes=temp$nodes, reweight=TRUE,  type="ind")
+# GLS with exchangeability in third dimension
+fit4 <- lmnet(temp$Y, temp$X, directed=TRUE, tmax=5, 
+              nodes=temp$nodes, reweight=TRUE,  type="exch")
+
+## ---- echo=FALSE---------------------------------------------------------
+timetable <- round(cbind(coef(fit1), coef(fit2), coef(fit3), coef(fit4)), 4)
+signifs <- cbind( summary(fit1)$coef[,4] < .05, 
+summary(fit2)$coef[,4] < .05,
+summary(fit3)$coef[,4] < .05,
+summary(fit4)$coef[,4] < .05)
+signif_coefs <- rep("*", length(signifs))
+signif_coefs[!signifs] <- ""
+esttable <- matrix(paste0(timetable, signif_coefs), ncol=ncol(timetable))
+rownames(esttable) <- c(paste0("intercept ", c("school", "friends", "family", "significant others",  "popular culture")), "xbinary", "xabs")
+colnames(esttable) <- c("OLS/ind", "OLS/exch", "GLS/ind", "GLS/exch")
+knitr::kable(esttable, caption="Estimated coefficients for the multiple network observation. `*' indicates a p-value less than 0.05.")
+
+## ---- fig.show='hold'----------------------------------------------------
 n <- 10
 phi1 <- rphi(n, seed=1)    # 6 parameters of random positive definite matrix
 phi2 <- rphi(n, seed=1, phi6=T)   # with nonzero 6th parameter

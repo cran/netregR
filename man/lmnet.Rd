@@ -4,8 +4,9 @@
 \alias{lmnet}
 \title{Linear regression for network response}
 \usage{
-lmnet(Y, X, directed = T, nodes = NULL, reweight = FALSE, tol = 1e-06,
-  maxit = 10000, verbose = FALSE)
+lmnet(Y, X, directed = TRUE, tmax = 1, nodes = NULL, reweight = FALSE,
+  type = "exchangeable", tol = 1e-06, maxit = 10000, ndstop = TRUE,
+  verbose = FALSE)
 }
 \arguments{
 \item{Y}{Vector of relations to be regress, of length \eqn{d}. Column-wise vectorization of adjacency matrix without diagonal entries (self-loops).}
@@ -14,13 +15,19 @@ lmnet(Y, X, directed = T, nodes = NULL, reweight = FALSE, tol = 1e-06,
 
 \item{directed}{Optional logical indicator of whether input data is for a directed network, default is \code{TRUE}. Undirected data format is lower triangle of adjacencey matrix.}
 
+\item{tmax}{Optional numeric of third dimension of relational data array, default is \code{1}, i.e. a relational matrix.}
+
 \item{nodes}{Optional \eqn{d \times 2} matrix indicating the (directed) relation pairs to which each entry in \eqn{Y} and each row in \eqn{X} corresponds. If not input, complete network observation with column-wise vectorization of adjacency matrix without diagonal entries (self-loops) is assumed. The size \eqn{d} and \code{directed} must correspond to an appropriate network of size \eqn{n}.}
 
 \item{reweight}{Optional logical indicator of whether iteratively reweighted least squares should be used to compute estimate of \eqn{\beta}. Default is \code{FALSE}.}
 
+\item{type}{Optional character specifying degree of exchangeability of third dimension of array (when present, i.e. in temporal relational arrays). Default is \code{exchangeable}, and the remaining option is \code{independent}. Truncated inputs are accepted. See details below.}
+
 \item{tol}{Optional numeric, tolerance of stopping criteria of iteratively reweighted least squares estimate of \eqn{\beta}. Default is \code{tol=1e-6}.}
 
 \item{maxit}{Optional numeric, maximum number of iterations for iteratively reweighted least squares estimate of \eqn{\beta}. Default is \code{maxit=1e4}.}
+
+\item{ndstop}{Optional logical indicator of whether negative definite weighting matrix in iteratively reweighted least squares should stop the descent. Default is \code{TRUE}.}
 
 \item{verbose}{Optional logical indicator of whether information from iteratively reweighted least squares estimate of \eqn{\beta} should be printed. Default is \code{FALSE}.}
 }
@@ -31,7 +38,7 @@ lmnet(Y, X, directed = T, nodes = NULL, reweight = FALSE, tol = 1e-06,
 This function takes \eqn{X} and \eqn{Y} values and fits the multiple linear regression \eqn{Y = X \beta + \epsilon} and returns standard errors.
 }
 \details{
-This function takes \eqn{X} and \eqn{Y} values and fits the multiple linear regression \eqn{Y = X \beta + \epsilon} by ordinary least squares or iteratively reweighted least squares as indicated by the input. The covariance structure is exchangeable from that of Marrs (2017). The standard errors and test statistics are based on the same paper.
+This function takes \eqn{X} and \eqn{Y} values and fits the multiple linear regression \eqn{Y = X \beta + \epsilon} by ordinary least squares or iteratively reweighted least squares as indicated by the input. The covariance structure is exchangeable from that of Marrs (2017). The standard errors and test statistics are based on the same paper.  \\  In the three dimensional relational array case, i.e. temporal relational data, requires a specification of the type of exchangeability in this third dimension. We may assume that different time periods are independent. On the other hand, we might assume each repeated observation is exchangeable (for example decomposing trade networks into type of ). See Figure 6a of Marrs et. al. (2017) for the exchangeable case and the surrounding discussion for the independent case.
 }
 \examples{
 set.seed(1)

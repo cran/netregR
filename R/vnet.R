@@ -10,6 +10,7 @@
 #' @param directed Optional logical indicator of whether input data is for a directed network, default is \code{TRUE}. Undirected data format is lower triangle of adjacencey matrix. 
 #' @param nodes Optional \eqn{d \times 2} matrix indicating the (directed) relation pairs to which each entry in \eqn{e} and each row in \eqn{X} corresponds. If not input, complete network observation is assumed and the size \eqn{d} and \code{directed} must correspond to an appropriate network of size \eqn{n}. 
 #' @param type Optional string indicating whether the `meat' in the sandwich variance estimator is estimated using exchangeable theory (see Marrs et. al. (2017)) or using dyadic clustering (Fafchamps and Gubert (2007)). 
+#' @param tmax Optional numeric of third dimension of relational data array, default is \code{1}, i.e. a relational matrix. Currently only accepts \code{tmax = 1}.
 #' @param fit Optional fitted model object. One of either \code{fit} or the pair \code{(e, X)} must be specified. Defaults to \code{fit} if both entered. Designed around `lmnet' class but may work for others, such as `lm'
 #'
 #' @details This function takes \eqn{X} and \eqn{e} values computes the variance-covariance matrix of \eqn{\hat{\beta}} that resulted in the residuals \eqn{e = Y - X \hat{\beta}} assuming that the errors are exchangeable, as based on Marrs et. al. (2017) when \code{type = "exchangeable"}. When \code{type = "dyadic clustering"}, the theory from Fafchamps and Gubert (2007) is implemented. 
@@ -19,7 +20,8 @@
 #' \item{vhat}{Estimated variance-covariance matrix of cofficient estimates \eqn{\hat{\beta}}.}
 #' \item{phi}{Vector of variance-covariance parameter estimates.}
 #' \item{corrected}{Logical of whether variance-covariance matrix was corrected from negative definite to positive semi-definite.}
-#' \item{type}{See inputs}
+#' \item{type}{See inputs.}
+#' \item{tmax}{See inputs.}
 #' 
 #' @seealso \code{\link{lmnet}}, \code{\link{inputs_lmnet}} 
 #' 
@@ -36,12 +38,14 @@
 #' e <- rnorm(d)
 #' vnet(e=e,X=X)
 #' 
-vnet <- function(e=NULL, X=NULL, directed=TRUE, nodes=NULL, type="exchangeable", fit=NULL)
+vnet <- function(e=NULL, X=NULL, directed=TRUE, nodes=NULL, type="exchangeable", tmax=1, fit=NULL)
 {
   #### Data check and formats
   subtract <- NULL
   directed <- as.logical(directed)
   type <- as.character(type)
+  tmax <- as.numeric(tmax)
+  if(tmax > 1){stop("tmax > 1 not currently supported")}
   
   if(!is.null(nodes)){
     nodes <- as.matrix(nodes)
@@ -68,6 +72,7 @@ vnet <- function(e=NULL, X=NULL, directed=TRUE, nodes=NULL, type="exchangeable",
   temp <- node_preprocess(as.numeric(e), as.matrix(X), as.logical(directed), nodes)
   e <- temp$Y  ;  X <- temp$X  ;  row_list <- temp$row_list  ;  n <- temp$n  
   rm(temp)
+  gc()
   
   if(is.null(fit)){
     bread <- solve(crossprod(X))

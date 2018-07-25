@@ -1,7 +1,7 @@
 #' Perform GEE estimate / IRWLS of coefficients
 #'
 #' @keywords internal
-GEE.est <- function(row.list, Y, X, n, directed=T, beta_start=NULL, missing=F, dyads=NULL, tol.in=1e-6, maxit=1e4, verbose=F) #, node.mat=1) 
+GEE.est <- function(row.list, Y, X, n, directed=TRUE, beta_start=NULL, missing=FALSE, dyads=NULL, tol.in=1e-6, maxit=1e4, ndstop=TRUE, verbose=FALSE) #, node.mat=1) 
 {
   # Calculate GEE estimate of regressors beta for continuous data
   # Return beta, residuals, weight matrix, # iterations, objective function Q, and actual tolerance
@@ -34,19 +34,22 @@ GEE.est <- function(row.list, Y, X, n, directed=T, beta_start=NULL, missing=F, d
       # W <- build_exchangeable_matrix(n, inv_phi, directed, dyads)
       XWX <- meatABC(row.list, inv_phi, X, X, directed)
       XWY <- meatABC(row.list, inv_phi, X, matrix(Y, ncol=1), directed)
-      # mine <- min( eigen_exch(n, inv_phi, directed, FALSE)$uniquevals )
+      mine <- min( eigen_exch(n, inv_phi, directed, FALSE)$uniquevals )
       
     } else {  # must invert directly with missingness
       Winv <- build_exchangeable_matrix(n, phi, directed, dyads)
       W <- solve(Winv)  
       XWX <- crossprod(X,W) %*% X
       XWY <- crossprod(X,W) %*% Y
-      # mine <- min( eigen(W)$values )
+      mine <- min( eigen(W)$values )
     }
-    # if(mine < -.Machine$double.eps^.5){
-    #   warning("Negative definite weight matrix encountered")
-    #   cat(mine, "\n")
-    # }
+    if(mine < -.Machine$double.eps^.5){
+      warning("Negative definite weight matrix encountered")
+      cat("\nValue: ", mine, "\n")
+      if(ndstop){
+        break()
+      }
+    }
     
     
     beta_new <- as.vector( solve(XWX, XWY) )
@@ -93,10 +96,12 @@ GEE.est <- function(row.list, Y, X, n, directed=T, beta_start=NULL, missing=F, d
 
 
 #' Pre-processes data for ordering etc.
-#' #'
+#'
+#'
 #' @keywords internal
 node_preprocess <- function(Y, X, directed, nodes, subtract=NULL)
 {
+
   #### Preprep
   directed <- as.logical(directed)
   
@@ -115,13 +120,17 @@ node_preprocess <- function(Y, X, directed, nodes, subtract=NULL)
   if(length(remove) > 0){
     Y <- Y[-remove]
     X <- X[-remove,]
-    nodes <- nodes[-remove,]
+    if(!is.null(nodes)){
+      nodes <- nodes[-remove,]
+    } else {
+      nodes <- node.gen(n, directed)[-remove,]
+    }
   }
   ####
   
   
   if(is.null(nodes)){
-    missing <- F
+    missing <- FALSE
     cc <- 4 + 4*(directed==F)
     n <- (1+sqrt(1+cc*d))/2
     if(n != round(n)){stop("Size of Y and X must be valid for a network of some size; assuming complete network at this point")}
@@ -660,7 +669,7 @@ build_phi_matrix <- function(n, phi, directed=T, sta_flag=F )
     A[6,] <- c(phi[6], phi[6], phi[4] + phi[5] + (n-4)*phi[6], phi[3] + phi[5] + (n-4)*phi[6], phi[3] + phi[4] + 2*phi[5] + 2*(n-4)*phi[6],
                phi[1] + phi[2] + (n-4)*(phi[3] + phi[4] + 2*phi[5] + (n-5)*phi[6]))
     
-  } else if (sta_flag == F & directed==T) {
+  } else if (sta_flag == T & directed==T) {
     A <- matrix(NA, 7, 7)
     A[1,] <- c(phi[1], phi[2], (n-2)*phi[3], (n-2)*phi[4], (n-2)*phi[6], (n-2)*phi[5], (n-3)*(n-2)*phi[7])
     
@@ -808,6 +817,7 @@ eigen_exch <- function(n, phi, directed=FALSE, calcall=TRUE)
       e[5] <- e[4] - 2*q
     }
     
+    e <- e*phi[1]
     
     if(calcall){
       efull <- phi[1]*c(e[1], rep(e[2], (n-1)*(n-2)/2 - 1), rep(e[3], (n-1)*(n-2)/2), rep(e[4], n-1), rep(e[5], n-1))

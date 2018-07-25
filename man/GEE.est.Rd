@@ -4,8 +4,9 @@
 \alias{GEE.est}
 \title{Perform GEE estimate / IRWLS of coefficients}
 \usage{
-GEE.est(row.list, Y, X, n, directed = T, beta_start = NULL, missing = F,
-  dyads = NULL, tol.in = 1e-06, maxit = 10000, verbose = F)
+GEE.est(row.list, Y, X, n, directed = TRUE, beta_start = NULL,
+  missing = FALSE, dyads = NULL, tol.in = 1e-06, maxit = 10000,
+  ndstop = TRUE, verbose = FALSE)
 }
 \description{
 Perform GEE estimate / IRWLS of coefficients

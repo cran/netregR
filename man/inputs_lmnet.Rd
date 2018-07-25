@@ -4,30 +4,34 @@
 \alias{inputs_lmnet}
 \title{Input preprocessing}
 \usage{
-inputs_lmnet(Xlist, Y = NULL, directed = TRUE, add_intercept = TRUE)
+inputs_lmnet(Xlist, Y = NULL, directed = TRUE, add_intercept = TRUE,
+  time_intercept = FALSE)
 }
 \arguments{
-\item{Xlist}{List of \eqn{n \times n} matrices, possibly containing response matrix labeled `Y'. Diagonals (self-loops) are ignored.}
+\item{Xlist}{List of \eqn{n \times n \times tmax} matrices, possibly containing response matrix labeled `Y'. Diagonals (self-loops) are ignored.}
 
-\item{Y}{Optional \eqn{n \times n} response matrix. NAs in this matrix will be automatically removed. Diagonals (self-loops) are ignored.}
+\item{Y}{Optional \eqn{n \times n \times tmax} response matrix. NAs in this matrix will be automatically removed. Diagonals (self-loops) are ignored.}
 
 \item{directed}{Optional logical indicator of whether input data is for a directed network, default is \code{TRUE}. Undirected data format is lower triangle of adjacencey matrix.}
 
 \item{add_intercept}{Optional logical indicator of whether intercept should be added to X, default is \code{TRUE}.}
+
+\item{time_intercept}{Optional logical indicator of whether separate intercept should be added to X for each observation of the relational matrix, default is \code{FALSE}.}
 }
 \value{
 A list of:
 \item{Y}{Vector of responses (column-wise vectorization order) of appropriate length.}
 \item{X}{Matrix of covariates (column-wise vectorization order) of appropriate size.}
-\item{nodes}{2-column matrix indicating directed relation pairs to which each entry in \eqn{Y} and each row in \eqn{X} corresponds.}
+\item{nodes}{2-column matrix (or 3-column for repeated observations) indicating directed relation pairs to which each entry in \eqn{Y} and each row in \eqn{X} corresponds.}
 }
 \description{
 Prepare covariates and optional response in adjacency matrix form. If undirected, the values are drawn from the lower triangle of the adjacency matrices.
 }
 \details{
-This function takes a list of network covariates (in adjacency matrix form) and prepares them for the regression code \code{lmnet}.
+This function takes a list of network covariates (in adjacency matrix form) and prepares them for the regression code \code{lmnet}. Accomodates 3-dimensional relational arrays with \code{tmax} repeated observations of the network (over time or context). Typical network data with a single observation may be input as matrices, i.e. \code{tmax = 1}.
 }
 \examples{
+# tmax = 1
 set.seed(1)
 n <- 10
 Xlist <- list(matrix(rnorm(n^2),n,n), matrix(sample(c(0,1), n^2, replace=TRUE),n,n))
@@ -36,6 +40,18 @@ Xlist$Y[1:5] <- NA
 r <- inputs_lmnet(Xlist)
 r
 lmnet(r$Y,r$X,nodes=r$nodes)
+
+# tmax = 4
+set.seed(1)
+n <- 10
+tmax <- 4
+X1 <- array(rnorm(n^2*tmax),c(n,n,tmax))
+X2 <- array(sample(c(0,1), n^2*tmax, replace=TRUE), c(n,n,tmax))
+Xlist <- list(X1, X2)
+Xlist$Y <- array(rnorm(n^2)*tmax, c(n, n, tmax))
+Xlist$Y[1:5] <- NA
+r <- inputs_lmnet(Xlist)
+head(r$nodes)
 
 }
 \seealso{

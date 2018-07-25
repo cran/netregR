@@ -2,13 +2,11 @@
 % Please edit documentation in R/helpers.R
 \name{node_preprocess}
 \alias{node_preprocess}
-\title{Pre-processes data for ordering etc.
-#'}
+\title{Pre-processes data for ordering etc.}
 \usage{
 node_preprocess(Y, X, directed, nodes, subtract = NULL)
 }
 \description{
 Pre-processes data for ordering etc.
-#'
 }
 \keyword{internal}

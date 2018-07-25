@@ -1,10 +1,10 @@
 Package: netregR
 Title: Regression of Network Responses
-Version: 0.3.1
+Version: 1.0.0
 Authors@R: c(person("Frank W. Marrs", email="frank.marrs@colostate.edu", role=c("aut", "cre")), person("Bailey K. Fosdick", role=c("aut")), person("Tyler H. McCormick", role=c("aut")))
 Description: Regress network responses (both directed and undirected) onto covariates of interest that may be actor-, relation-, or network-valued. In addition, compute principled variance estimates of the coefficients assuming that the errors are jointly exchangeable. Missing data is accommodated. Additionally implements building and inversion of covariance matrices under joint exchangeability, and  generates random covariance matrices of this class. For more detail on methods, see Marrs, Fosdick, and McCormick (2017) <arXiv:1701.05530>.
 Depends: R (>= 3.3.0)
-Imports: Matrix, stats, graphics
+Imports: Matrix, stats, graphics, utils
 VignetteBuilder: knitr
 Suggests: knitr, knitcitations
 License: MIT + file LICENSE
@@ -12,10 +12,10 @@ Encoding: UTF-8
 LazyData: true
 RoxygenNote: 6.0.1
 NeedsCompilation: no
-Packaged: 2018-05-04 23:20:52 UTC; fmarrs3
+Packaged: 2018-07-25 03:44:25 UTC; fmarrs3
 Author: Frank W. Marrs [aut, cre],
   Bailey K. Fosdick [aut],
   Tyler H. McCormick [aut]
 Maintainer: Frank W. Marrs <frank.marrs@colostate.edu>
 Repository: CRAN
-Date/Publication: 2018-05-05 03:21:09 UTC
+Date/Publication: 2018-07-25 04:30:02 UTC
