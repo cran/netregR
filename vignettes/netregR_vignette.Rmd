@@ -3,7 +3,11 @@ title: "Regression with Network Response"
 author: "Frank W. Marrs, Bailey K. Fosdick, and Tyler H. McCormick"
 date: "`r Sys.Date()`"
 bibliography: bibliography.bib
-output: rmarkdown::html_vignette
+output: 
+  rmarkdown::html_vignette:
+    # theme: default
+    latex_engine: pdf_latex
+    # css: flatly.css
 vignette: >
   %\VignetteIndexEntry{Regression with Network Response}
   %\VignetteEngine{knitr::rmarkdown}
@@ -14,22 +18,22 @@ vignette: >
 
 
 ```{r, echo=FALSE, eval=TRUE, message=FALSE, warning=FALSE}
-library("knitcitations")
+# library("knitcitations")
 library("netregR")
-cleanbib()
-options("citation_format" = "pandoc")
+# cleanbib()
+# options("citation_format" = "pandoc")
 ```
 
 
 # Abstract
-The `netregR` package provides methods for performing regression of a network response, where each data point represents an edge on a network, on covariates of interest [@netregR]. In this vignette we first address linear regression of a single representation of a network. We provide examples for for directed and undirected networks, each with complete and incomplete observations. We then address linear regression for multiple observations of a network. Lastly, we examine some supporting methods for inverting covariance matrices of complete networks that are exchangeable. This vignette and the package `netregR` are based on @marrs2017.
+The `netregR` package provides methods for performing regression of a network response, where each data point represents an edge on a network, on covariates of interest. In this vignette we first address linear regression of a single representation of a network. We provide examples for for directed and undirected networks, each with complete and incomplete observations. We then address linear regression for multiple observations of a network. Lastly, we examine some supporting methods for inverting covariance matrices of complete networks that are exchangeable. This vignette and the package `netregR` are based on @marrs2017.
 
 # Introduction
 We focus on the model 
 \begin{align}
 y_{ij} = {\bf{x}}_{ij}^T \boldsymbol{\beta} + \epsilon_{ij}, \label{eq_linmod}
 \end{align}
-where $y_{ij}$ is a (possibly directed) continuous measure from actor $i$ to actor $j$ and ${\bf{x}}_{ij}^T$ is a corresponding vector of covariates. In our setting, the target is accurate inference of $\boldsymbol{\beta}$. As $y_{ij}$ is a network, we expect correlation among the errors $\{ \epsilon_{ij} \}_{i,j}^n$. In [@marrs2017], we argue that it is reasonable to assume that the errors are jointly exchangeable. By this, we mean that the labeling of the actors is non-informative to the distirbution of $\{ \epsilon_{ij} \}_{i,j}^n$, such that the distribution $\mathbb{P}(\{ \epsilon_{ij} \}_{i,j}^n) = \mathbb{P}(\{ \epsilon_{\pi(i) \pi(j)} \}_{i,j}^n)$ for any permutation $\pi(.)$. Indeed, many network models for residual structure are jointly exchangeable, for example the bilinear mixed effects network regression model proposed in [@hoff2005].
+where $y_{ij}$ is a (possibly directed) continuous measure from actor $i$ to actor $j$ and ${\bf{x}}_{ij}^T$ is a corresponding vector of covariates. In our setting, the target is accurate inference of $\boldsymbol{\beta}$. As $y_{ij}$ is a network, we expect correlation among the errors $\{ \epsilon_{ij} \}_{i,j}^n$. In @marrs2017, we argue that it is reasonable to assume that the errors are jointly exchangeable. By this, we mean that the labeling of the actors is non-informative to the distirbution of $\{ \epsilon_{ij} \}_{i,j}^n$, such that the distribution $\mathbb{P}(\{ \epsilon_{ij} \}_{i,j}^n) = \mathbb{P}(\{ \epsilon_{\pi(i) \pi(j)} \}_{i,j}^n)$ for any permutation $\pi(.)$. Indeed, many network models for residual structure are jointly exchangeable, for example the bilinear mixed effects network regression model proposed in @hoff2005.
 
 This vignette proceeds as follows: we first briefly described the regression methods implemented in the following section. Then, we provide an example of ordinary least squares and weighted least squares regressions of real world network data. We use a synthetic data set to illustrate the use of our methods on three-dimensional relational data, where the relations among the same set of actors has multiple observations over different contexts. Finally, we provide examples of efficient inversion of covariance matrices of jointly exchangeable relational data (in the single observation case).
 
@@ -38,7 +42,7 @@ We may estimate the linear model using ordinary least squares $\widehat{\boldsym
 \begin{align}
 {V}\left[\widehat{\boldsymbol{\beta}}_{OLS} \ \big| \ X \right] = (X^TX)^{-1}X^T {V}[\boldsymbol{\epsilon} ] X(X^TX)^{-1},
 \end{align}
-where $\boldsymbol{\epsilon}$ is the vector of errors corresponding to $Y$ and an estimate of $\boldsymbol{\epsilon}$'s variance is denoted $\widehat{V}[\boldsymbol{\epsilon}]$. In [@marrs2017], we provide an estimator $\widehat{V}_E[\boldsymbol{\epsilon}]$, where we assume that the errors are jointly exchangeable. We show that our estimator outperforms the state of the art when this assumption is reasonable. The package `netregR` implements this estimator to give standard error estimates for $\widehat{\boldsymbol{\beta}}_{OLS}$ that are asymptotically correct and more accurate than current approaches. 
+where $\boldsymbol{\epsilon}$ is the vector of errors corresponding to $Y$ and an estimate of $\boldsymbol{\epsilon}$'s variance is denoted $\widehat{V}[\boldsymbol{\epsilon}]$. In @marrs2017, we provide an estimator $\widehat{V}_E[\boldsymbol{\epsilon}]$, where we assume that the errors are jointly exchangeable. We show that our estimator outperforms the state of the art when this assumption is reasonable. The package `netregR` implements this estimator to give standard error estimates for $\widehat{\boldsymbol{\beta}}_{OLS}$ that are asymptotically correct and more accurate than current approaches. 
 
 ### Generalized Least Squares (GLS)
 It may be desirable to account for $\widehat{V}[\boldsymbol{\epsilon}]$ when estimating $\boldsymbol{\beta}$. It can be shown that, if $W^{-1} := \widehat{V}[\boldsymbol{\epsilon}]$ is known, then the following estimator of the coefficients are the maximum likelihood esitmator under normally-distributed errors [@aitkin1935]:
@@ -51,18 +55,18 @@ In general, $W$ is not known. However, one method for attaining an estimate of $
 \end{align}
 where $\widehat{W}_{final}$ is the estimate of $W$ at convergence. 
 
-In some cases, it may be reasonable to assume that, although the exchangeable assumption is reasonable, the true covariance structure is actually more flexible. In these cases, estimates of the variance-covariance matrix of the errors that are empirical \emph{might} be more appropriate. Here, one might choose to use the "dyadic clustering" estimator of [@fafchamps2007formation] to estimate the variance of the errors, which we denote $\widehat{V}_{DC}[\boldsymbol{\epsilon}]$. This leads to another consistent estimator of the GLS coefficients:
+In some cases, it may be reasonable to assume that, although the exchangeable assumption is reasonable, the true covariance structure is actually more flexible. In these cases, estimates of the variance-covariance matrix of the errors that are empirical \emph{might} be more appropriate. Here, one might choose to use the "dyadic clustering" estimator of @fafchamps2007formation to estimate the variance of the errors, which we denote $\widehat{V}_{DC}[\boldsymbol{\epsilon}]$. This leads to another consistent estimator of the GLS coefficients:
 \begin{align}
 \widehat{V}\left[\widehat{\boldsymbol{\beta}}_{GLS} \ \big| \ X \right] = \left(X^T \widehat{W}_{final} X \right)^{-1} \left(X^T \widehat{W}_{final}^T \widehat{V}_{DC}[\boldsymbol{\epsilon}] \widehat{W}_{final} X \right) \left(X^T \widehat{W}_{final} X \right)^{-1}.
 \end{align}
-We emphasize that this estimator should be used only when excess heteroskedasticity is expected in the error structure, otherwise the approach of [@marrs2017] will be more accurate. 
+We emphasize that this estimator should be used only when excess heteroskedasticity is expected in the error structure, otherwise the approach of @marrs2017 will be more accurate. 
 
 ### Multiple observations of the network
-We may extend the above approaches to settings where the network is observed in various contexts or at multiple time points. We provide methods where each observations is exchangeable. For example, consider the case where the relational array $Y$ represents the quantity of trade between pairs of countries, decomposed by various categories of goods traded (e.g. intangible vs. tangible). Without reason to believe some pairs of good types are more dependent than others,  we might be willing to assume the dependence structure along the third dimension is exchangeable. A simpler assumption is that each observation of the network is independent; we provide methods for both the exchangeable and independent cases. Please see [@marrs2017] for further discussion. 
+We may extend the above approaches to settings where the network is observed in various contexts or at multiple time points. We provide methods where each observations is exchangeable. For example, consider the case where the relational array $Y$ represents the quantity of trade between pairs of countries, decomposed by various categories of goods traded (e.g. intangible vs. tangible). Without reason to believe some pairs of good types are more dependent than others,  we might be willing to assume the dependence structure along the third dimension is exchangeable. A simpler assumption is that each observation of the network is independent; we provide methods for both the exchangeable and independent cases. Please see @marrs2017 for further discussion. 
 
 
 ### Building and inverting exchangeable covariance matrices
-The iterative procedure procedure for the estimator $\widehat{\boldsymbol{\beta}}_{GLS}$ may require many inversions of $\widehat{V}[\boldsymbol{\epsilon}]$. We provide a method for efficient inversion of ${V}[\boldsymbol{\epsilon}]$, when the errors are exchangeable, for complete data in [@marrs2017] and implement this inversion as a function in `netregR`. Additionally, we provide a function for generating a random positive definite ${V}[\boldsymbol{\epsilon}]$ when the errors are jointly exchangeable. 
+The iterative procedure procedure for the estimator $\widehat{\boldsymbol{\beta}}_{GLS}$ may require many inversions of $\widehat{V}[\boldsymbol{\epsilon}]$. We provide a method for efficient inversion of ${V}[\boldsymbol{\epsilon}]$, when the errors are exchangeable, for complete data in @marrs2017 and implement this inversion as a function in `netregR`. Additionally, we provide a function for generating a random positive definite ${V}[\boldsymbol{\epsilon}]$ when the errors are jointly exchangeable. 
 
 
 # Regression examples
@@ -212,8 +216,8 @@ knitr::kable(esttable, caption="Estimated coefficients for the multiple network 
 
 
 
-# Covariance matrix exmple
-In [@marrs2017] we define the class of covariance matrices resulting from errors (for example) that are exchangeable. We prove that these matrices have at most six unique terms, and in the paper we assume $\phi_6 = 0$. We implement the function `rphi(.)` to randomly generate these six parameters for positive definite covariance matrices. In addition, for complete data, we provide a function to efficiently invert these matrices, `invert_exchangeable_matrix(.)`. Below we demonstrate these functions for directed data; however, the application to undirected data is analogous.
+# Covariance matrix example
+In @marrs2017 we define the class of covariance matrices resulting from errors (for example) that are exchangeable. We prove that these matrices have at most six unique terms, and in the paper we assume $\phi_6 = 0$. We implement the function `rphi(.)` to randomly generate these six parameters for positive definite covariance matrices. In addition, for complete data, we provide a function to efficiently invert these matrices, `invert_exchangeable_matrix(.)`. Below we demonstrate these functions for directed data; however, the application to undirected data is analogous.
 
 ```{r, fig.show='hold'}
 n <- 10

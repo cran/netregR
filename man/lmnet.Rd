@@ -38,7 +38,9 @@ lmnet(Y, X, directed = TRUE, tmax = 1, nodes = NULL, reweight = FALSE,
 This function takes \eqn{X} and \eqn{Y} values and fits the multiple linear regression \eqn{Y = X \beta + \epsilon} and returns standard errors.
 }
 \details{
-This function takes \eqn{X} and \eqn{Y} values and fits the multiple linear regression \eqn{Y = X \beta + \epsilon} by ordinary least squares or iteratively reweighted least squares as indicated by the input. The covariance structure is exchangeable from that of Marrs (2017). The standard errors and test statistics are based on the same paper.  \\  In the three dimensional relational array case, i.e. temporal relational data, requires a specification of the type of exchangeability in this third dimension. We may assume that different time periods are independent. On the other hand, we might assume each repeated observation is exchangeable (for example decomposing trade networks into type of ). See Figure 6a of Marrs et. al. (2017) for the exchangeable case and the surrounding discussion for the independent case.
+This function takes \eqn{X} and \eqn{Y} values and fits the multiple linear regression \eqn{Y = X \beta + \epsilon} by ordinary least squares or iteratively reweighted least squares as indicated by the input. The covariance structure is exchangeable from that of Marrs et. al. (2017). The standard errors and test statistics are based on the same paper.    
+
+The three dimensional relational array case, i.e. temporal relational data, requires a specification of the type of exchangeability in this third dimension. We may assume that different time periods are independent. On the other hand, we might assume each repeated observation is exchangeable (for example decomposing trade networks into sectors of trade: goods vs. services). See Figure 6a of Marrs et. al. (2017) for the exchangeable case and the surrounding discussion for the independent case.
 }
 \examples{
 set.seed(1)
@@ -54,7 +56,7 @@ fit2
 
 }
 \references{
-Marrs, F. W., McCormick, T. H., & Fosdick, B. K. (2017). Standard errors for regression on relational data with exchangeable errors. arXiv preprint arXiv:1701.05530.
+Marrs, F. W., Fosdick, B. K., & McCormick, T. H., (2017). Standard errors for regression on relational data with exchangeable errors. arXiv preprint arXiv:1701.05530.
 }
 \seealso{
 \code{\link{vhat_exch}}, \code{\link{inputs_lmnet}}

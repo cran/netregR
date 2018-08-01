@@ -12,14 +12,14 @@
 #' @param directed Optional logical indicator of whether input data is for a directed network, default is \code{TRUE}. Undirected data format is lower triangle of adjacencey matrix. 
 #'
 #'
-#' @details This function generates a set of 5 (or 6, as appropriate) parameters that corresponds to positive definite exchangeable covariance matrix for a network of size \code{n}. See Marrs (2017). 
+#' @details This function generates a set of 5 (or 6, as appropriate) parameters that corresponds to positive definite exchangeable covariance matrix for a network of size \code{n}. See Marrs et. al. (2017). 
 #'
 #' @return 
 #' \item{phi}{Vector of parameters.}
 #' 
 #' @seealso \code{\link{build_exchangeable_matrix}}, \code{\link{invert_exchangeable_matrix}} 
 #' 
-#' @references Marrs, F. W., McCormick, T. H., & Fosdick, B. K. (2017). Standard errors for regression on relational data with exchangeable errors. arXiv preprint arXiv:1701.05530.
+#' @references Marrs, F. W., Fosdick, B. K., & McCormick, T. H.,  (2017). Standard errors for regression on relational data with exchangeable errors. arXiv preprint arXiv:1701.05530.
 #'
 #' @examples
 #' rphi(10, seed=1)
@@ -82,14 +82,14 @@ rphi <- function(n, seed=NULL, phi6=FALSE, directed=TRUE)
 #' @param directed Optional logical indicator of whether input data is for a directed network, default is \code{TRUE}. Undirected data format is lower triangle of adjacencey matrix. 
 #' @param dyads Optional numeric vector of dyads to subset the matrix to. 
 #'
-#' @details This function builds a covariance matrix in the exchangeable class from the vector of parameters input. See Marrs (2017).
+#' @details This function builds a covariance matrix in the exchangeable class from the vector of parameters input. See Marrs et.al. (2017).
 #'
 #' @return 
 #' \item{out}{Exchangeable matrix.}
 #' 
 #' @seealso \code{\link{rphi}}, \code{\link{invert_exchangeable_matrix}} 
 #' 
-#' @references Marrs, F. W., McCormick, T. H., & Fosdick, B. K. (2017). Standard errors for regression on relational data with exchangeable errors. arXiv preprint arXiv:1701.05530.
+#' @references Marrs, F. W., Fosdick, B. K., & McCormick, T. H., (2017). Standard errors for regression on relational data with exchangeable errors. arXiv preprint arXiv:1701.05530.
 #'
 #' @examples
 #' n <- 5
@@ -136,14 +136,14 @@ build_exchangeable_matrix <- function(n, phi, directed=TRUE, dyads=NULL)
 #' @param phi Appropriate-length vector of parameters, must be length 5 or 6 for directed=\code{TRUE} or length 2 or 3 for directed=\code{FALSE}.
 #' @param directed Optional logical indicator of whether input data is for a directed network, default is \code{TRUE}. Undirected data format is lower triangle of adjacencey matrix. 
 #'
-#' @details This function inverts a covariance matrix of the excahgneable class in a manner much faster than the direct inverse, and the computational cost does not scale with n. See Marrs (2017). This approach will only work for complete networks. 
+#' @details This function inverts a covariance matrix of the exchangeable class in a manner much faster than the direct inverse, and the computational cost does not scale with n. See Marrs et. al. (2017). This approach will only work for complete networks. 
 #'
 #' @return 
 #' \item{out}{Parameters of inverted matrix of exchangeable class.}
 #' 
 #' @seealso \code{\link{rphi}}, \code{\link{build_exchangeable_matrix}}
 #' 
-#' @references Marrs, F. W., McCormick, T. H., & Fosdick, B. K. (2017). Standard errors for regression on relational data with exchangeable errors. arXiv preprint arXiv:1701.05530.
+#' @references Marrs, F. W., Fosdick, B. K., & McCormick, T. H., (2017). Standard errors for regression on relational data with exchangeable errors. arXiv preprint arXiv:1701.05530.
 #'
 #' @examples
 #' n <- 10

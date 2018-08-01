@@ -22,14 +22,14 @@ rphi(n, seed = NULL, phi6 = FALSE, directed = TRUE)
 Generate positive definite phi set
 }
 \details{
-This function generates a set of 5 (or 6, as appropriate) parameters that corresponds to positive definite exchangeable covariance matrix for a network of size \code{n}. See Marrs (2017).
+This function generates a set of 5 (or 6, as appropriate) parameters that corresponds to positive definite exchangeable covariance matrix for a network of size \code{n}. See Marrs et. al. (2017).
 }
 \examples{
 rphi(10, seed=1)
 
 }
 \references{
-Marrs, F. W., McCormick, T. H., & Fosdick, B. K. (2017). Standard errors for regression on relational data with exchangeable errors. arXiv preprint arXiv:1701.05530.
+Marrs, F. W., Fosdick, B. K., & McCormick, T. H.,  (2017). Standard errors for regression on relational data with exchangeable errors. arXiv preprint arXiv:1701.05530.
 }
 \seealso{
 \code{\link{build_exchangeable_matrix}}, \code{\link{invert_exchangeable_matrix}}

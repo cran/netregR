@@ -4,7 +4,7 @@
 \alias{model.matrix.lmnet}
 \title{model.matrix S3 generic for class lmnet}
 \usage{
-\method{model}{matrix.lmnet}(object, ...)
+\method{model.matrix}{lmnet}(object, ...)
 }
 \arguments{
 \item{object}{lmnet object}

@@ -27,7 +27,7 @@
 #' 
 #' @aliases vhat_exch
 #' 
-#' @references Marrs, F. W., McCormick, T. H., & Fosdick, B. K. (2017). Standard errors for regression on relational data with exchangeable errors. arXiv preprint arXiv:1701.05530.
+#' @references Marrs, F. W., Fosdick, B. K., & McCormick, T. H.,  (2017). Standard errors for regression on relational data with exchangeable errors. arXiv preprint arXiv:1701.05530.
 #' @references Fafchamps, M., & Gubert, F. (2007). Risk sharing and network formation. American Economic Review, 97(2), 75-79.
 #'
 #' @examples

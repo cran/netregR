@@ -20,7 +20,7 @@ invert_exchangeable_matrix(n, phi, directed = TRUE)
 Invert an exchangeable matrix
 }
 \details{
-This function inverts a covariance matrix of the excahgneable class in a manner much faster than the direct inverse, and the computational cost does not scale with n. See Marrs (2017). This approach will only work for complete networks.
+This function inverts a covariance matrix of the exchangeable class in a manner much faster than the direct inverse, and the computational cost does not scale with n. See Marrs et. al. (2017). This approach will only work for complete networks.
 }
 \examples{
 n <- 10
@@ -31,7 +31,7 @@ range(I1 -  diag(n*(n-1)))   # it works
 
 }
 \references{
-Marrs, F. W., McCormick, T. H., & Fosdick, B. K. (2017). Standard errors for regression on relational data with exchangeable errors. arXiv preprint arXiv:1701.05530.
+Marrs, F. W., Fosdick, B. K., & McCormick, T. H., (2017). Standard errors for regression on relational data with exchangeable errors. arXiv preprint arXiv:1701.05530.
 }
 \seealso{
 \code{\link{rphi}}, \code{\link{build_exchangeable_matrix}}

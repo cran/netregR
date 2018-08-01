@@ -1,8 +1,8 @@
 ## ---- echo=FALSE, eval=TRUE, message=FALSE, warning=FALSE----------------
-library("knitcitations")
+# library("knitcitations")
 library("netregR")
-cleanbib()
-options("citation_format" = "pandoc")
+# cleanbib()
+# options("citation_format" = "pandoc")
 
 ## ---- fig.show='hold'----------------------------------------------------
 data("wolf")

@@ -22,7 +22,7 @@ build_exchangeable_matrix(n, phi, directed = TRUE, dyads = NULL)
 Build an exchangeable matrix of sparseMatrix class
 }
 \details{
-This function builds a covariance matrix in the exchangeable class from the vector of parameters input. See Marrs (2017).
+This function builds a covariance matrix in the exchangeable class from the vector of parameters input. See Marrs et.al. (2017).
 }
 \examples{
 n <- 5
@@ -30,7 +30,7 @@ build_exchangeable_matrix(n, rphi(n, seed=1))
 
 }
 \references{
-Marrs, F. W., McCormick, T. H., & Fosdick, B. K. (2017). Standard errors for regression on relational data with exchangeable errors. arXiv preprint arXiv:1701.05530.
+Marrs, F. W., Fosdick, B. K., & McCormick, T. H., (2017). Standard errors for regression on relational data with exchangeable errors. arXiv preprint arXiv:1701.05530.
 }
 \seealso{
 \code{\link{rphi}}, \code{\link{invert_exchangeable_matrix}}
